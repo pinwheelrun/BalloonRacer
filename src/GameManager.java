@@ -1,9 +1,7 @@
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 import java.util.Vector;
 
-////// 주석 달기(다른 소스들도)
-////// synchronized등 코드 정리
 public class GameManager {
 	// 각종 public 상수
 	public static final int MAX_RACER = 16;
@@ -15,6 +13,7 @@ public class GameManager {
 	public static final Dimension SIZE = new Dimension(60, START_LINE + 50);
 	public static final Color RESULT = new Color(169, 109, 199);
 	public static final Color SCREEN = new Color(227, 251, 210);
+	public static final ImageIcon ICON = new ImageIcon("images\\balloons_color.png");
 
 	// 생성자 관련
 	private BalloonRacerFrame frame = null;
@@ -25,42 +24,53 @@ public class GameManager {
 	private Vector<Racer> racer = new Vector<Racer>();
 	private Vector<Integer> speedVector = new Vector<Integer>();
 	private int veteran; // 실제로 경주를 끝낸 racer의 수
+	private String[] names = new String[MAX_RACER];
 
 	// 우승/꼴찌 가리기 관련 변수들
 	private boolean pickWinner = true;
 	private int goal = 0;
-	private int loserFlag = 0;
+	private int loserIndex = 0;
 	private Racer chosen = null;
 
 	public GameManager(BalloonRacerFrame frame) {
 		this.frame = frame;
 		screen.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 4));
 		screen.setBackground(SCREEN);
+		for (int i = 0; i < names.length; i++)
+			names[i] = new String("");
 	}
+
+	public JPanel getScreen() { return screen; }
+	public void setRaceRule(boolean pick) { pickWinner = pick; }
+	public void saveName(int lane, String name) { names[lane] = name; }
 
 	public void maintainStadium() { // 새 게임을 위한 초기화
 		screen.removeAll();
 		screen.revalidate();
 		screen.repaint();
-
 		goal = 0;
-		loserFlag = 0;
+		loserIndex = 0;
 		chosen = null;
 	}
 
 	public void onYourMark() { // screen 변경
-		for (int i = 0; i < numOfRacer; i++)
-			screen.add(racer.get(i));
-
+		for (int i = 0; i < numOfRacer; i++) {
+			Racer r = racer.get(i);
+			screen.add(r);
+			r.setRacerName(names[i]); // 기존에 입력한 레인 이름 가져오기
+		}
 		screen.revalidate();
 		screen.repaint();
+
 		frame.setLabel(null, Color.LIGHT_GRAY);
 		frame.pack();
+		if (!pickWinner)
+			loserPicker();
+	}
 
-		if (!pickWinner) {
-			for (int i = 0; i < numOfRacer; i++)
-				loserFlag += i;
-		}
+	public void loserPicker() {
+		for (int i = 0; i < numOfRacer; i++)
+			loserIndex += i;
 	}
 
 	private void getSet() {
@@ -81,7 +91,7 @@ public class GameManager {
 		}
 	}
 
-	public void recruitRacer(int userSelect) {
+	public void recruitRacer(int userSelect) { // Vector에 경주를 기다리는 Racer들의 대기열 만들기
 		int currSize = racer.size();
 		int diff = userSelect - currSize;
 		if (diff > 0) {
@@ -104,10 +114,6 @@ public class GameManager {
 			racer.get(i).setSpeed();
 		}
 	}
-
-	////////////// 함수순서 정리하기
-	public JPanel getScreen() { return screen; }
-	public void setRaceRule(boolean pick) { pickWinner = pick; }
 
 	public int setSpeed() {
 		int speed;
@@ -137,27 +143,28 @@ public class GameManager {
 				return;
 		}
 		else { // 꼴찌를 가려내는 경우
-			int index = racer.getLane() - 1;
-			loserFlag -= index;
+			loserIndex -= racer.getLane();
 			if (numOfRacer - goal == 1)
-				chosen = this.racer.get(loserFlag);
+				chosen = this.racer.get(loserIndex);
 			else
 				return;
 		}
 
+		// 승자 또는 꼴찌가 가려내진 경우
 		String name = chosen.getRacerName();
 		if (name.length() == 0)
 			name = "(무명)";
 
-		frame.setLabel(chosen.getLane() + "번 레인 " + name + "님입니다!!", RESULT);
-		endRace();
+		frame.setLabel((chosen.getLane() + 1) + "번 레인 " + name + "님입니다!!", RESULT);
+		clearance();
 	}
 
-	private void endRace() {
+	private void clearance() { // 게임 마무리 작업
 		try {
 			Thread.sleep(500);
 		}
 		catch (InterruptedException e) {}
+
 		for (int i = 0; i < veteran; i++)
 			racer.get(i).kill();
 		fireRacer();

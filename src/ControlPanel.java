@@ -2,8 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-////////타이틀 바꾸기 버튼 추가하기!!!!!!!!!! (출발버튼 왼쪽)
-///////// 주석, 코드정리
 public class ControlPanel extends JPanel {
 	private GameManager game = null;
 	private JComboBox<String> numberBox = null;
@@ -48,6 +46,7 @@ public class ControlPanel extends JPanel {
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					game.setRaceRule(LOSER);
+					game.loserPicker();
 				}
 			}
 		});
@@ -58,8 +57,6 @@ public class ControlPanel extends JPanel {
 		add(winner, layout);
 		layout.gridx++;
 		add(loser, layout);
-
-		////////////// purpose 바꾸기 버튼 추가 필요
 
 		layout.anchor = GridBagConstraints.LINE_END;
 		layout.weightx = 0.7;
@@ -117,7 +114,7 @@ public class ControlPanel extends JPanel {
 		numberBox.setSelectedIndex(GameManager.DEFAULT);
 		game.onYourMark();
 	}
-	
+
 	private int getUserInput() {
 		int value;
 		String userInput = JOptionPane.showInputDialog(null,
