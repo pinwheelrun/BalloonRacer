@@ -3,7 +3,8 @@ import javax.swing.*;
 
 public class BalloonRacerFrame extends JFrame {
 	private JLabel label = new JLabel();
-	private String purpose = null;
+	private static String DEFAULT = "pinwheelrun";
+	private String purpose = "<" + DEFAULT + ">배";
 	private GameManager game = new GameManager(this);
 	private ControlPanel control = new ControlPanel(game);
 
@@ -20,18 +21,21 @@ public class BalloonRacerFrame extends JFrame {
 		label.setHorizontalAlignment(JLabel.CENTER);
 		label.setPreferredSize(new Dimension(640, 30));
 		c.add(label, BorderLayout.NORTH);
-		label.setText(getPurpose());
 
 		setSize(640, 480);
 		setResizable(false);
 		setVisible(true);
+		label.setText(getPurpose());
 	}
 
 	private String getPurpose() {
 		String userInput = JOptionPane.showInputDialog(this, "참가 목적을 정해주세요.\n예) 점심메뉴 고를 사람", "풍선 경주가 열립니다!",
 				JOptionPane.QUESTION_MESSAGE);
-		if (userInput.length() == 0)
-			userInput = "pinwheelrun";
+		if (userInput == null)
+			userInput = DEFAULT;
+		else if (userInput.length() == 0)
+			userInput = DEFAULT;
+
 		purpose = "<" + userInput + ">배";
 		return new String("!!! " + purpose + " 풍선 경주 !!!");
 	}
